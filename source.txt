@@ -1,0 +1,415 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<ctype.h>
+#include<windows.h>
+typedef struct Box
+{
+    char ID[2];
+	char *poluchatel;
+	char *kopie;
+	char *podatel;
+	char *title;
+	char *sadarjanie;
+    int d,mnt,y,h,m,s;
+    struct Box *next;
+}box;
+void writeTemp(box *head);
+void writeFile(box *head);
+box* createList();
+box* readFile();
+void viewMailbox(box *head);
+void createCode(box*node);
+box* openLetter (box *head);
+box* removeSpam(box *head);
+int main()
+{
+	char choice;
+	while(1)
+	{
+		printf("^MENU^___________________\n");
+	printf(" ||1| : Add new mail		 \n ");
+	printf("||2| : Show mailbox			 \n ");
+	printf("||3| : Search by ID		 	\n ");
+	printf("||4| : Remove spam			 \n ");
+	printf("||5| : Exit				 	\n");
+	printf("_____________________________\n");
+	scanf("%s",&choice);
+		switch(choice)
+		{
+			case '1':writeFile(createList());
+			break;
+			case '2':viewMailbox(readFile());
+			break;
+			case '3':openLetter(readFile());
+			break;
+			case '4':removeSpam(readFile());
+			break;
+			case '5': exit(1);
+			break;
+			default : break;
+		}
+	}
+	return 0;
+}
+void writeTemp(box *head)
+{
+ box *node=NULL;
+	FILE *fp;
+	int len1=0,len2=0,len3=0,len4=0,len5=0;
+	char space=' ';
+	node=head;
+	if(!(fp=fopen("tmp.bin","ab")))
+	{
+		if(!(fp=fopen("tmp.bin","wb")))
+		{
+			printf("Error creating file for record!");
+			exit(1);
+		}
+	}
+		fwrite(&node->ID[0],sizeof(char),1,fp);
+		fwrite(&node->ID[1],sizeof(char),1,fp);
+		len1=strlen(node->poluchatel);
+		fwrite(&len1,sizeof(int),1,fp);
+		fwrite(node->poluchatel,sizeof(char),len1,fp);
+		len2=strlen(node->kopie);
+		fwrite(&len2,sizeof(int),1,fp);
+		fwrite(node->kopie,sizeof(char),len2,fp);
+		len3=strlen(node->podatel);
+		fwrite(&len3,sizeof(int),1,fp);
+		fwrite(node->podatel,sizeof(char),len3,fp);
+		len4=strlen(node->title);
+		fwrite(&len4,sizeof(int),1,fp);
+		fwrite(node->title,sizeof(char),len4,fp);
+		len5=strlen(node->sadarjanie);
+		fwrite(&len5,sizeof(int),1,fp);
+		fwrite(node->sadarjanie,sizeof(char),len5,fp);
+		fwrite(&node->d,sizeof(int),1,fp);
+		fwrite(&node->mnt,sizeof(int),1,fp);
+		fwrite(&node->y,sizeof(int),1,fp);
+		fwrite(&node->h,sizeof(int),1,fp);
+		fwrite(&node->m,sizeof(int),1,fp);
+		fwrite(&node->s,sizeof(int),1,fp);
+		fwrite(&space,sizeof(char),1,fp);
+		node=node->next;
+	fclose(fp);
+}
+void writeFile(box *head)
+{
+	box *node=NULL;
+	FILE *fp;
+	int len1=0,len2=0,len3=0,len4=0,len5=0;
+	int d,mnt,y,h,m,s;
+	d=mnt=y=h=m=s=0;
+	char space=' ';
+	SYSTEMTIME str_t;
+	GetSystemTime(&str_t);
+	d=str_t.wDay;
+	mnt=str_t.wMonth;
+	y=str_t.wYear;
+	h=str_t.wHour;
+	m=str_t.wMinute;
+	s=str_t.wSecond;
+	node=head;
+	if(!(fp=fopen("Mail.bin","ab")))
+	{
+		if(!(fp=fopen("Mail.bin","wb")))
+		{
+			printf("Error creating file for record!");
+			exit(1);
+		}
+	}
+		fwrite(&node->ID[0],sizeof(char),1,fp);
+		fwrite(&node->ID[1],sizeof(char),1,fp);
+		len1=strlen(node->poluchatel);
+		fwrite(&len1,sizeof(int),1,fp);
+		fwrite(node->poluchatel,sizeof(char),len1,fp);
+		len2=strlen(node->kopie);
+		fwrite(&len2,sizeof(int),1,fp);
+		fwrite(node->kopie,sizeof(char),len2,fp);
+		len3=strlen(node->podatel);
+		fwrite(&len3,sizeof(int),1,fp);
+		fwrite(node->podatel,sizeof(char),len3,fp);
+		len4=strlen(node->title);
+		fwrite(&len4,sizeof(int),1,fp);
+		fwrite(node->title,sizeof(char),len4,fp);
+		len5=strlen(node->sadarjanie);
+		fwrite(&len5,sizeof(int),1,fp);
+		fwrite(node->sadarjanie,sizeof(char),len5,fp);
+		fwrite(&d,sizeof(int),1,fp);
+		fwrite(&mnt,sizeof(int),1,fp);
+		fwrite(&y,sizeof(int),1,fp);
+		fwrite(&h,sizeof(int),1,fp);
+		fwrite(&m,sizeof(int),1,fp);
+		fwrite(&s,sizeof(int),1,fp);
+		fwrite(&space,sizeof(char),1,fp);
+		node=node->next;
+	fclose(fp);
+}
+box* createList()
+{
+	box* head=NULL;
+	box* node=NULL;
+	box* tmp=NULL;
+	char exit_symbol;
+	printf("You choose to insert new mail.\n");
+		printf("Do you want to continue(Y/N)? ");
+		fflush(stdin);
+		scanf("%c",&exit_symbol);
+		if(exit_symbol!='Y' && exit_symbol!='y')
+		{
+			if(head!=node)
+			{
+			tmp->next=NULL;
+			node=NULL;
+			free(node);
+			}
+		return NULL;
+		}
+		if(head==NULL)
+		{
+			head=(box*)calloc(1,sizeof(box));
+			tmp=node=head;
+			node->next=NULL;
+		}
+		else
+		{
+			node->next=(box*)calloc(1,sizeof(box));
+			tmp=node;
+			node=node->next;
+			node->next=NULL;
+		}
+        SYSTEMTIME str_t;
+        GetSystemTime(&str_t);
+		printf("Enter name of the receiver : ");
+		fflush(stdin);
+		node->poluchatel=(char*)calloc(1,50);
+		gets(node->poluchatel);
+		realloc(node->poluchatel,strlen(node->poluchatel));
+		createCode(node);
+		printf("\nEnter name of the receiver of the copy: ");
+		fflush(stdin);
+		node->kopie=(char*)calloc(1,50);
+		gets(node->kopie);
+		realloc(node->kopie,strlen(node->kopie));
+		printf("\nEnter name of the sender: ");
+		fflush(stdin);
+		node->podatel=(char*)calloc(1,50);
+		gets(node->podatel);
+		realloc(node->podatel,strlen(node->podatel));
+		printf("\nEnter heading: ");
+		fflush(stdin);
+		node->title=(char*)calloc(1,50);
+		gets(node->title);
+		realloc(node->title,strlen(node->title));
+		printf("\nEnter text: ");
+		fflush(stdin);
+		node->sadarjanie=(char*)calloc(1,100);
+		gets(node->sadarjanie);
+		realloc(node->sadarjanie,strlen(node->sadarjanie));
+		node->d=str_t.wDay;
+        node->mnt=str_t.wMonth;
+        node->y=str_t.wYear;
+        node->h=str_t.wHour;
+        node->m=str_t.wMinute;
+        node->s=str_t.wSecond;
+  return head;
+}
+box* readFile()
+{
+	FILE *fp;
+	box *head=NULL;
+	box *node=NULL;
+	int len1,len2,len3,len4,len5;
+    char space=' ';
+	if(!(fp=fopen("Mail.bin","rb")))
+	{
+		printf("Error reading file");
+		exit(1);
+	}
+	node=head;
+	while(1)
+	{
+		if(feof(fp)) break;
+		if(head==NULL)
+		{
+			head=(box*)calloc(1,sizeof(box));
+			node=head;
+			node->next=NULL;
+		}
+		else
+		{
+			node->next=(box*)calloc(1,sizeof(box));
+			node=node->next;
+			node->next=NULL;
+		}
+		fread(&node->ID[0],sizeof(char),1,fp);
+		fread(&node->ID[1],sizeof(char),1,fp);
+		fread(&len1,sizeof(int),1,fp);
+		node->poluchatel=(char*)calloc(1,len1);
+		fread(node->poluchatel,sizeof(char),len1,fp);
+		fread(&len2,sizeof(int),1,fp);
+		node->kopie=(char*)calloc(1,len2);
+		fread(node->kopie,sizeof(char),len2,fp);
+		fread(&len3,sizeof(int),1,fp);
+		node->podatel=(char*)calloc(1,len3);
+		fread(node->podatel,sizeof(char),len3,fp);
+		fread(&len4,sizeof(int),1,fp);
+		node->title=(char*)calloc(1,len4);
+		fread(node->title,sizeof(char),len4,fp);
+		fread(&len5,sizeof(int),1,fp);
+		node->sadarjanie=(char*)calloc(1,len5);
+		fread(node->sadarjanie,sizeof(char),len5,fp);
+		fread(&node->d,sizeof(int),1,fp);
+		fread(&node->mnt,sizeof(int),1,fp);
+		fread(&node->y,sizeof(int),1,fp);
+		fread(&node->h,sizeof(int),1,fp);
+		fread(&node->m,sizeof(int),1,fp);
+		fread(&node->s,sizeof(int),1,fp);
+		fread(&space,sizeof(char),1,fp);
+	}    fclose(fp);
+	return head;
+}
+void viewMailbox(box *head)
+{
+	box* node=NULL;
+	node=head;
+	while(1)
+	{
+		printf("ID:%c%c From:%s Heading:%s --Time of receiving:%d.%d.%d %d:%d:%d\n",node->ID[0],node->ID[1],node->podatel,node->title,node->d,node->mnt,node->y,node->h+3,node->m,node->s);
+		if(node->next==NULL) break;
+		node=node->next;
+	}
+}
+void createCode(box *node)
+{
+	 FILE *f;
+	char alphabet[]="abcdefghijklmnopqrstuvwxyz\0";
+	char numeric[]="0123456789\0";
+	int num, alpha;
+	if(!(f=fopen("code.txt","r")))
+	{
+		num=alpha=0;
+	}
+	else
+	{
+		fscanf(f,"%d\n",&alpha);
+		fscanf(f,"%d",&num);
+		fclose(f);
+	}
+	num++;
+	if(num==10)
+	{
+		alpha++;
+		num=0;
+	}
+	node->ID[0]=alphabet[alpha];
+	node->ID[1]=numeric[num];
+	f=fopen("code.txt","w");
+	fprintf(f,"%d\n",alpha);
+	fprintf(f,"%d",num);
+	fclose(f);
+}
+box* openLetter(box *head)
+{
+	box *node=NULL;
+	box *tmp=NULL;
+	char *sample, exit_symbol;
+	printf("You are in search mode.\n Do you want to continue(Y/N)?");
+	fflush(stdin);
+	scanf("%c",&exit_symbol);
+	if(exit_symbol!='Y' && exit_symbol!='y')
+	{
+		return NULL;
+	}
+	sample=(char*)calloc(1,2);
+	printf("Enter the code: ");
+	fflush(stdin);
+	scanf("%c",&sample[0]);
+	scanf("%c",&sample[1]);
+	node=head;
+	while(1)
+	{
+		if(node->ID[0]==sample[0] && node->ID[1]==sample[1])
+		{
+			printf("ID:%c%c Text:%s\n",node->ID[0],node->ID[1],node->sadarjanie);
+			return tmp;
+		}
+		tmp=node;
+		node=node->next;
+		if(node==NULL)
+		{
+			printf("No mail found!\n");
+			return 0;
+		}
+	}
+}
+box* removeSpam(box *head)
+{
+    box *node,*tmp,*prev;
+    FILE *f;
+    int len=0,i=0,len2=0,br=0,br2=0,len3=0,br3=0;
+    double sr=0;
+    char space=' ';
+    if(!(f=fopen("bad_words.txt","r")))
+	{
+		printf("Error reading file");
+		exit(1);
+	}
+    fscanf(f,"%1d",&len);
+    char word[len];
+    fread(word,sizeof(char),len,f);
+    printf("%s\n",word);
+    for(prev=node=head;node!=NULL; )
+    {
+        len2=strlen(node->sadarjanie);
+        char tmp_a[len2];
+        char c;
+            while((c=(node->sadarjanie[br2]))!='\0')
+            {
+                if(c!=space)
+                {
+                    br2++;
+                }
+                if(c==space)
+                {
+                      if(strstr(tmp_a,word))
+                    {
+                        i++;
+                    }
+                    br2++;
+                    memset(tmp_a,0x0,br3);
+                    br3=0;
+                    len3++;
+                }
+                tmp_a[br3]=c;
+                br3++;
+            }
+            if(c!=space)
+                len3++;
+        sr=len3/5;
+        if (i>sr)
+        {
+            tmp=node;
+            if (head==node)
+                head = node->next;
+            node=node->next;
+            free(tmp);
+            prev->next = node;
+            br++;
+        }
+        else
+        {
+            prev = node;
+            node=node->next;
+        }
+        if(br!=0)
+        {
+        writeTemp(prev);
+        }
+        memset(tmp_a,0x0,br3);
+     i=br2=br3=len3=0;
+     }fclose(f);
+     remove("Mail.bin");
+     rename("tmp.bin","Mail.bin");
+    return head;}
